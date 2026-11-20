@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import chatRoutes from "./routes/chatRoutes.js";
 
-dotenv.config();
+// Override system env variables with .env file values
+dotenv.config({ override: true });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,7 +14,7 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/quantiphi_
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB with timeout
+// Connect to MongoDB
 mongoose
   .connect(MONGO_URI, {
     serverSelectionTimeoutMS: 5000

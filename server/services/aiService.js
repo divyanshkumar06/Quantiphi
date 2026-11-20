@@ -1,7 +1,11 @@
 import OpenAI from "openai";
+import dotenv from "dotenv";
+
+dotenv.config({ override: true });
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.OPENAI_BASE_URL || undefined
 });
 
 // Tone-based dynamic system instructions
@@ -18,7 +22,7 @@ export const getSystemInstruction = (tone) => {
 };
 
 /**
- * Creates an OpenAI chat completion stream with dynamic tone instructions
+ * Creates a chat completion stream with dynamic tone instructions
  * @param {Array} history - Array of { role, content } objects
  * @param {string} tone - "Professional" | "Casual" | "Concise"
  */
@@ -34,7 +38,7 @@ export const createChatStream = async (history, tone = "Professional") => {
   ];
 
   return await openai.chat.completions.create({
-    model: "gpt-4o-mini", // Fast, highly capable, cost-effective
+    model: process.env.OPENAI_MODEL || "gpt-4o-mini",
     messages,
     stream: true
   });
