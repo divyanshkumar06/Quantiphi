@@ -10,6 +10,12 @@
 
 ---
 
+## Live Demo Output
+
+![AI Chat Assistant Live Output](screenshots/demo-output.png)
+
+---
+
 ## 1. Architectural Overview & Data Flow
 
 The application uses **Server-Sent Events (SSE)** for unidirectional real-time token streaming over standard HTTP. It avoids polling, artificial timers, and WebSocket connection overhead.
