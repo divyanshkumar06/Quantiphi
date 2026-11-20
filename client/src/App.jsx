@@ -96,21 +96,24 @@ export default function App() {
           return;
         }
 
+        let parsed;
         try {
-          const parsed = JSON.parse(rawData);
-          if (parsed.error) {
-            throw new Error(parsed.error);
-          }
-          if (parsed.conversationId && onConversationId) {
-            onConversationId(parsed.conversationId);
-          }
-          if (parsed.chunk) {
-            onChunk(parsed.chunk);
-          }
+          parsed = JSON.parse(rawData);
         } catch (e) {
           if (rawData !== "[DONE]") {
             console.warn("SSE parse error or payload:", rawData);
           }
+          continue;
+        }
+
+        if (parsed.error) {
+          throw new Error(parsed.error);
+        }
+        if (parsed.conversationId && onConversationId) {
+          onConversationId(parsed.conversationId);
+        }
+        if (parsed.chunk) {
+          onChunk(parsed.chunk);
         }
       }
     }
