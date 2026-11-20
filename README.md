@@ -193,7 +193,7 @@ OPENAI_API_KEY=sk-proj-yourActualKeyHere
 > ```env
 > OPENAI_API_KEY=gsk_yourGroqKey
 > OPENAI_BASE_URL=https://api.groq.com/openai/v1
-> OPENAI_MODEL=llama-3.1-8b-instant
+> OPENAI_MODEL=openai/gpt-oss-120b
 > ```
 
 ---
@@ -238,13 +238,19 @@ npm run dev
 
 ---
 
-## 8. Senior Engineering Design Decisions
+## 8. Senior Engineering Design Decisions & Security
 
 1. **SSE vs. WebSockets**:
    Chat assistants follow a request-response cadence where only the response is streaming. SSE operates natively over HTTP/2, requires no socket handshake, works behind enterprise reverse proxies, and handles reconnection via browser protocols.
-2. **Client Disconnection Management**:
-   The backend attaches a listener to `req.on("close")`. If a user closes the browser tab while the AI is halfway through a 1,000-token response, the server halts consumption from OpenAI immediately, cutting downstream token costs.
-3. **Graceful Metaprompt Isolation**:
-   System prompts are dynamically mapped from a strict backend enum, preventing client-side prompt injections.
-4. **Security & Secrets**:
-   The OpenAI API key is strictly isolated to backend service handlers. `client/` communicates solely with the Express BFF (Backend-for-Frontend).
+2. **Client Disconnection Management (Token Cost Optimization)**:
+   The backend attaches a listener to `req.on("close")`. If a user closes the browser tab while the AI is halfway through a 1,000-token response, the server halts consumption from the LLM immediately, cutting downstream token costs.
+3. **Graceful Metaprompt Isolation & Injection Defense**:
+   System prompts are strictly mapped from a backend enum whitelist (`["Professional", "Casual", "Concise"]`). Malicious client input cannot override or poison the system instructions.
+4. **NoSQL / BSON Injection Hardening**:
+   All route identifiers are strictly validated via `mongoose.Types.ObjectId.isValid()`, preventing server crashes and casting errors from malformed input.
+5. **Memory & Payload DoS Defense**:
+   Incoming request bodies are limited to `1mb` via `express.json({ limit: "1mb" })` to protect the event loop against oversized payload attacks.
+6. **Security & Secrets Isolation**:
+   The API keys are strictly kept on the backend in `.env` and never bundled or sent to the browser. [server/.env](file:///c:/Users/Lenovo/Desktop/quantiphi/server/.env) is git-ignored and never committed to GitHub.
+7. **Resilient Error Propagation**:
+   Stream errors (such as API 429 quota exhaustion or key invalidation) are surfaced immediately to the UI via an interactive banner, preventing silent failures.
